@@ -29,6 +29,9 @@ const Home: NextPage = () => {
   const projectsQuery2 = api.example.getProjects.useInfiniteQuery(
     { cursor: 0 },
     {
+      // for some reason the infiniteQuery threats the placeholderData
+      // as the source of truth for the types
+      
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       placeholderData: { pageParams: [undefined], pages: [null] },
       onSuccess(data) {
@@ -37,6 +40,7 @@ const Home: NextPage = () => {
     }
   );
 
+  // but the normal useQuery doesn't
   const projectsQuery3 = api.example.getProjects.useQuery(
     { cursor: 0 },
     {
