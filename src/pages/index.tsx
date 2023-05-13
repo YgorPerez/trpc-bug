@@ -22,7 +22,7 @@ const Home: NextPage = () => {
     {
       // for some reason the infiniteQuery treats the placeholderData
       // as the source of truth for the types, so the next line gives
-      // am error because nextCursor doesn't exist in null
+      // an error because nextCursor doesn't exist in null
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       placeholderData: { pageParams: [undefined], pages: [null] },
       onSuccess(data) {
