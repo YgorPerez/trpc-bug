@@ -5,23 +5,14 @@ import styles from "./index.module.css";
 
 import { api } from "~/utils/api";
 
-function generatePlaceholderData() {
-  const placeholderData = {
-    nextCursor: undefined,
-    data: [{ name: "test", id: "1" }],
-  };
-  return placeholderData;
-}
-
 const Home: NextPage = () => {
-  const placeholderData = generatePlaceholderData();
   const projectsQuery1 = api.example.getProjects.useInfiniteQuery(
     { cursor: 0 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      placeholderData: { pageParams: [undefined], pages: [placeholderData] },
+      placeholderData: { pageParams: [undefined], pages: [{data: "someData", nextCursor: 10}]},
       onSuccess(data) {
-        console.log(data);
+        console.log(data.data); // infers the types from the placeholderData, but doesn't error
       },
     }
   );
@@ -29,13 +20,13 @@ const Home: NextPage = () => {
   const projectsQuery2 = api.example.getProjects.useInfiniteQuery(
     { cursor: 0 },
     {
-      // for some reason the infiniteQuery threats the placeholderData
-      // as the source of truth for the types
-      
+      // for some reason the infiniteQuery treats the placeholderData
+      // as the source of truth for the types, so the next line gives
+      // am error because nextCursor doesn't exist in null
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       placeholderData: { pageParams: [undefined], pages: [null] },
       onSuccess(data) {
-        console.log(data);
+        console.log(data.data); // infers the types from placeholderData and errors
       },
     }
   );
@@ -46,7 +37,7 @@ const Home: NextPage = () => {
     {
       placeholderData: null,
       onSuccess(data) {
-        console.log(data);
+        console.log(data); // infers the types normally from the router and doesn't error
       },
     }
   );
