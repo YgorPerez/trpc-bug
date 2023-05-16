@@ -1,46 +1,15 @@
-import { type NextPage } from "next";
+import { type GetServerSideProps, type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "./index.module.css";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import transformer from "../utils/transformer";
+import { appRouter } from "../server/api/root";
 
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const projectsQuery1 = api.example.getProjects.useInfiniteQuery(
-    { cursor: 0 },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      placeholderData: { pageParams: [undefined], pages: [{data: "someData", nextCursor: 10}]},
-      onSuccess(data) {
-        console.log(data.data); // infers the types from the placeholderData, but doesn't error
-      },
-    }
-  );
-
-  const projectsQuery2 = api.example.getProjects.useInfiniteQuery(
-    { cursor: 0 },
-    {
-      // for some reason the infiniteQuery treats the placeholderData
-      // as the source of truth for the types, so the next line gives
-      // an error because nextCursor doesn't exist in null
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      placeholderData: { pageParams: [undefined], pages: [null] },
-      onSuccess(data) {
-        console.log(data.data); // infers the types from placeholderData and errors
-      },
-    }
-  );
-
-  // but the normal useQuery doesn't
-  const projectsQuery3 = api.example.getProjects.useQuery(
-    { cursor: 0 },
-    {
-      placeholderData: null,
-      onSuccess(data) {
-        console.log(data); // infers the types normally from the router and doesn't error
-      },
-    }
-  );
+  const helloQuery = api.example.hello.useQuery({ text: "from trpc" });
 
   return (
     <>
@@ -79,12 +48,31 @@ const Home: NextPage = () => {
             </Link>
           </div>
           <p className={styles.showcaseText}>
-            {projectsQuery1.data?.pages[0] ? "test" : "Loading tRPC query..."}
+            {helloQuery.data
+              ? helloQuery.data.greeting
+              : "Loading tRPC query..."}
           </p>
         </div>
       </main>
     </>
   );
+};
+
+export const runtime = "experimental-edge";
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const trpc = createServerSideHelpers({
+    router: appRouter,
+    ctx: {},
+    transformer,
+  });
+  await trpc.example.hello.prefetch({ text: "from trpc" });
+
+  return {
+    props: {
+      trpcState: trpc.dehydrate(),
+    },
+  };
 };
 
 export default Home;
