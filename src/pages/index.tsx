@@ -10,9 +10,12 @@ const Home: NextPage = () => {
     { cursor: 0 },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      placeholderData: { pageParams: [undefined], pages: [{data: "someData", nextCursor: 10}]},
+      placeholderData: {
+        pageParams: [undefined],
+        pages: [{ data: "someData", nextCursor: 10 }],
+      },
       onSuccess(data) {
-        console.log(data.data); // infers the types from the placeholderData, but doesn't error
+        console.log(data.pages[0]?.data); // infers the types from the placeholderData, but doesn't error
       },
     }
   );
@@ -26,7 +29,7 @@ const Home: NextPage = () => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       placeholderData: { pageParams: [undefined], pages: [null] },
       onSuccess(data) {
-        console.log(data.data); // infers the types from placeholderData and errors
+        console.log(data.pages[0]?.data); // infers the types from placeholderData and errors
       },
     }
   );
@@ -37,7 +40,7 @@ const Home: NextPage = () => {
     {
       placeholderData: null,
       onSuccess(data) {
-        console.log(data); // infers the types normally from the router and doesn't error
+        console.log(data.data); // infers the types normally from the router and doesn't error
       },
     }
   );
